@@ -53,7 +53,7 @@ private:
 
   const double pressure = 500, c11 = 1e+5, c22 = 1e+3, c12 = 1e+3,
                eps = 0.1, radius = 1;
-  double delta = 1e-2, delta_max = 1e+8;
+  double delta = 1e-0, delta_max = 1e+8;
   unsigned int n_dofs;
   double alpha_k;
   bool verbose = false;
@@ -79,7 +79,7 @@ private:
   std::vector<double> grad_F, dk;
   std::vector<std::vector<double>> hess_F;
 
-  // comp_grad, comp_dk, comp_alpha, update+parada
+  // comp_grad, comp_dk, comp_alpha, update + criterio de parada
   std::vector<double> timing{0.,0.,0.,0.};
   // output data
   std::vector<std::vector<double>> output_data;
@@ -219,8 +219,9 @@ void MySolver::compute_dk()
   {
     //gradT(i) = grad_F[i];
     for (unsigned int j = 0; j < n_dofs; ++j)
-      //hessT[i][j] = hess_F[i][j];
       lapack_hess(i,j) = hess_F[i][j];
+      //hessT[i][j] = hess_F[i][j];
+      
   }
   //==========================================
   //SolverControl solver_control(1000, 1e-12);
@@ -249,7 +250,8 @@ void MySolver::compute_alpha_derivs(double alpha, double &dF_dAlpha, double &d2F
   // alphaAD é uma variavel interna de compute_alpha_derivs que recebe o valor do alpha atual
   // e é usada para fazer as derivadas
   std::vector<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>> new_s(n_dofs, 0); // new_s = s_k + alpha^(i) * d_k
-  Sacado::Fad::DFad<Sacado::Fad::DFad<double>> alphaAD = alpha;
+  Sacado::Fad::DFad<Sacado::Fad::DFad<double>> alphaAD;
+  alphaAD = alpha;
   alphaAD.diff(0,1); // so vamos derivar com relacao a alphaAD
   alphaAD.val().diff(0,1); // mas vamos derivar 2 vezes
 
@@ -557,7 +559,8 @@ int main()
 {
   try
     {    
-      MySolver solver(1,4,3); // 0 para rodar com "480" elementos
+      //int poly_degree, unsigned int refine_global, unsigned int quad_degree): 
+      MySolver solver(1,6,3); // 0 para rodar com "480" elementos
       solver.run();      
     }
   catch (std::exception &exc)
